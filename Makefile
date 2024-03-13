@@ -13,4 +13,7 @@ lint:
 black:
 	black --ipynb *.ipynb
 
+lab:
+	jupyter lab
+
 all: requirements lint
