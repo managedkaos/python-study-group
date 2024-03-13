@@ -2,6 +2,14 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template for SageMaker Notebook Instance with S3 and SSM Parameter Store. STACK NAME MUST BE GLOBALLY UNIQUE!'
 
 Resources:
+  Repository:
+    Type: AWS::SageMaker::CodeRepository
+    Properties:
+      CodeRepositoryName: !Sub ${AWS::StackName}
+      GitConfig:
+        Branch: main
+        RepositoryUrl: https://github.com/managedkaos/python-study-group.git
+
   SageMakerNotebookInstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -39,6 +47,7 @@ Resources:
       InstanceType: ml.t2.medium
       RoleArn: !GetAtt SageMakerNotebookInstanceRole.Arn
       NotebookInstanceName: !Sub ${AWS::StackName}
+      DefaultCodeRepository: !Sub ${AWS::StackName}
 
   S3Bucket:
     Type: 'AWS::S3::Bucket'
