@@ -1,4 +1,5 @@
 TARGETS := all requirements lint black
+NOTEBOOKS := $(wildcard *.ipynb)
 
 hello:
 	@echo make [$(TARGETS)]
@@ -19,7 +20,7 @@ lab:
 	jupyter lab
 
 run:
-	jupyter execute --inplace --execute *.ipynb
+	$(foreach notebook, $(NOTEBOOKS), jupyter nbconvert --execute --inplace $(notebook);
 
 clean:
 	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace *.ipynb
