@@ -1,10 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudFormation template for SageMaker Notebook Instance with S3 and SSM Parameter Store'
-
-Parameters:
-  NotebookInstanceName:
-    Type: String
-    Description: Name of the SageMaker Notebook Instance and base name for other resources (must be globally unique for S3!!)
+Description: 'CloudFormation template for SageMaker Notebook Instance with S3 and SSM Parameter Store. STACK NAME MUST BE GLOBALLY UNIQUE!'
 
 Resources:
   SageMakerNotebookInstanceRole:
@@ -61,6 +56,7 @@ Resources:
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
+
   S3BucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     DeletionPolicy: Delete
@@ -75,10 +71,17 @@ Resources:
               - 's3:GetObject'
             Resource: !Sub '${S3Bucket.Arn}/*'
 
+  RegionParameter:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${NotebookInstanceName}/region'
+      Type: String
+      Value: !Sub ${AWS::Region}
+
   S3BucketNameParameter:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: !Sub '/${NotebookInstanceName}/S3Bucket'
+      Name: !Sub '/${NotebookInstanceName}/s3bucket'
       Type: String
       Value: !Ref NotebookInstanceName
 
@@ -96,7 +99,7 @@ Outputs:
     Description: Jupyter Lab Interface
     Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceName}?view=lab'
   WebsiteURL:
-    Value: !GetAtt 
+    Value: !GetAtt
       - S3Bucket
       - WebsiteURL
     Description: URL for website hosted on S3
