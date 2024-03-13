@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for SageMaker Notebook Instance with S3 and SSM Parameter Store'
+
+Parameters:
+  NotebookInstanceName:
+    Type: String
+    Description: Name of the SageMaker Notebook Instance and base name for other resources (must be globally unique for S3!!)
+
+Resources:
+  SageMakerNotebookInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [sagemaker.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Policies:
+        - PolicyName: SageMakerAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${NotebookInstanceName}/*'
+                  - !Sub 'arn:aws:s3:::${NotebookInstanceName}'
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameter'
+                  - 'ssm:PutParameter'
+                Resource:
+                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${NotebookInstanceName}/*'
+
+  SageMakerNotebookInstance:
+    Type: 'AWS::SageMaker::NotebookInstance'
+    Properties:
+      InstanceType: ml.t2.medium
+      RoleArn: !GetAtt SageMakerNotebookInstanceRole.Arn
+      NotebookInstanceName: !Ref NotebookInstanceName
+
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref NotebookInstanceName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+  S3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    DeletionPolicy: Delete
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+            Resource: !Sub '${S3Bucket.Arn}/*'
+
+  S3BucketNameParameter:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${NotebookInstanceName}/S3Bucket'
+      Type: String
+      Value: !Ref NotebookInstanceName
+
+Outputs:
+  Region:
+    Description: The region where the stack is running
+    Value: !Sub ${AWS::Region}
+  NotebookInstanceName:
+    Description: The name assigned to the notebook instance and other resources
+    Value: !Sub ${NotebookInstanceName}
+  ClassicURL:
+    Description: Classic Jupyter Notebook Interface
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceName}?view=classic'
+  LabURL:
+    Description: Jupyter Lab Interface
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceName}?view=lab'
+  WebsiteURL:
+    Value: !GetAtt 
+      - S3Bucket
+      - WebsiteURL
+    Description: URL for website hosted on S3
