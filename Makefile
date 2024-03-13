@@ -26,6 +26,7 @@ clean:
 	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace *.ipynb
 
 nuke: clean
+	rm -f index.html
 	rm -rvf ./data
 	rm -rf __pycache__ .ipynb_checkpoints
 
