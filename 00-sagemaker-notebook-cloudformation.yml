@@ -24,27 +24,27 @@ Resources:
                   - 's3:DeleteObject'
                   - 's3:ListBucket'
                 Resource:
-                  - !Sub 'arn:aws:s3:::${NotebookInstanceName}/*'
-                  - !Sub 'arn:aws:s3:::${NotebookInstanceName}'
+                  - !Sub 'arn:aws:s3:::${AWS::StackName}/*'
+                  - !Sub 'arn:aws:s3:::${AWS::StackName}'
               - Effect: Allow
                 Action:
                   - 'ssm:GetParameter'
                   - 'ssm:PutParameter'
                 Resource:
-                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${NotebookInstanceName}/*'
+                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*'
 
   SageMakerNotebookInstance:
     Type: 'AWS::SageMaker::NotebookInstance'
     Properties:
       InstanceType: ml.t2.medium
       RoleArn: !GetAtt SageMakerNotebookInstanceRole.Arn
-      NotebookInstanceName: !Ref NotebookInstanceName
+      NotebookInstanceName: !Sub ${AWS::StackName}
 
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Ref NotebookInstanceName
+      BucketName: !Sub ${AWS::StackName}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -74,16 +74,16 @@ Resources:
   RegionParameter:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: !Sub '/${NotebookInstanceName}/region'
+      Name: !Sub '/${AWS::StackName}/region'
       Type: String
       Value: !Sub ${AWS::Region}
 
   S3BucketNameParameter:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: !Sub '/${NotebookInstanceName}/s3bucket'
+      Name: !Sub '/${AWS::StackName}/s3bucket'
       Type: String
-      Value: !Ref NotebookInstanceName
+      Value: !Sub ${AWS::StackName}
 
 Outputs:
   Region:
@@ -91,13 +91,13 @@ Outputs:
     Value: !Sub ${AWS::Region}
   NotebookInstanceName:
     Description: The name assigned to the notebook instance and other resources
-    Value: !Sub ${NotebookInstanceName}
+    Value: !Sub ${AWS::StackName}
   ClassicURL:
     Description: Classic Jupyter Notebook Interface
-    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceName}?view=classic'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${AWS::StackName}?view=classic'
   LabURL:
     Description: Jupyter Lab Interface
-    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${NotebookInstanceName}?view=lab'
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${AWS::StackName}?view=lab'
   WebsiteURL:
     Value: !GetAtt
       - S3Bucket
