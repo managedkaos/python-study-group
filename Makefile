@@ -27,7 +27,7 @@ run:
 	$(foreach notebook, $(NOTEBOOKS), jupyter nbconvert --execute --inplace $(notebook); )
 
 clean:
-	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace *.ipynb
+	nb-clean clean *.ipynb
 
 nuke: clean
 	rm -f index.html

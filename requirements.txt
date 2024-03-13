@@ -1,4 +1,5 @@
 jupyter
 jupyterlab-git
 cfn-lint
+nb-clean
 black[jupyter]
