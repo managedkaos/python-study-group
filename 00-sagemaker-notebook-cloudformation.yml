@@ -1,5 +1,6 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudFormation template for SageMaker Notebook Instance with S3 and SSM Parameter Store. STACK NAME MUST BE GLOBALLY UNIQUE!'
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: CloudFormation template for SageMaker Notebook Instance with S3 and SSM Parameter Store. STACK NAME MUST BE GLOBALLY UNIQUE!
 
 Resources:
   Repository:
@@ -11,38 +12,40 @@ Resources:
         RepositoryUrl: https://github.com/managedkaos/python-study-group.git
 
   SageMakerNotebookInstanceRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
-              Service: [sagemaker.amazonaws.com]
-            Action: ['sts:AssumeRole']
+              Service:
+                - sagemaker.amazonaws.com
+            Action:
+              - sts:AssumeRole
       Policies:
         - PolicyName: SageMakerAccessPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - 's3:GetObject'
-                  - 's3:PutObject'
-                  - 's3:DeleteObject'
-                  - 's3:ListBucket'
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
                 Resource:
-                  - !Sub 'arn:aws:s3:::${AWS::StackName}/*'
-                  - !Sub 'arn:aws:s3:::${AWS::StackName}'
+                  - !Sub arn:aws:s3:::${AWS::StackName}/*
+                  - !Sub arn:aws:s3:::${AWS::StackName}
               - Effect: Allow
                 Action:
-                  - 'ssm:GetParameter'
-                  - 'ssm:PutParameter'
+                  - ssm:GetParameter
+                  - ssm:PutParameter
                 Resource:
-                  - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*'
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*
 
   SageMakerNotebookInstance:
-    Type: 'AWS::SageMaker::NotebookInstance'
+    Type: AWS::SageMaker::NotebookInstance
     Properties:
       InstanceType: ml.t2.medium
       RoleArn: !GetAtt SageMakerNotebookInstanceRole.Arn
@@ -50,8 +53,8 @@ Resources:
       DefaultCodeRepository: !Sub ${AWS::StackName}
 
   S3Bucket:
-    Type: 'AWS::S3::Bucket'
     DeletionPolicy: Delete
+    Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub ${AWS::StackName}
       PublicAccessBlockConfiguration:
@@ -67,8 +70,8 @@ Resources:
         ErrorDocument: error.html
 
   S3BucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
     DeletionPolicy: Delete
+    Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref S3Bucket
       PolicyDocument:
@@ -77,20 +80,20 @@ Resources:
             Effect: Allow
             Principal: '*'
             Action:
-              - 's3:GetObject'
-            Resource: !Sub '${S3Bucket.Arn}/*'
+              - s3:GetObject
+            Resource: !Sub ${S3Bucket.Arn}/*
 
   RegionParameter:
-    Type: 'AWS::SSM::Parameter'
+    Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub '/${AWS::StackName}/region'
+      Name: !Sub /${AWS::StackName}/region
       Type: String
       Value: !Sub ${AWS::Region}
 
   S3BucketNameParameter:
-    Type: 'AWS::SSM::Parameter'
+    Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub '/${AWS::StackName}/s3bucket'
+      Name: !Sub /${AWS::StackName}/s3bucket
       Type: String
       Value: !Sub ${AWS::StackName}
 
@@ -98,17 +101,19 @@ Outputs:
   Region:
     Description: The region where the stack is running
     Value: !Sub ${AWS::Region}
+
   NotebookInstanceName:
     Description: The name assigned to the notebook instance and other resources
     Value: !Sub ${AWS::StackName}
+
   ClassicURL:
     Description: Classic Jupyter Notebook Interface
-    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${AWS::StackName}?view=classic'
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${AWS::StackName}?view=classic
+
   LabURL:
     Description: Jupyter Lab Interface
-    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${AWS::StackName}?view=lab'
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/notebook-instances/openNotebook/${AWS::StackName}?view=lab
+
   WebsiteURL:
-    Value: !GetAtt
-      - S3Bucket
-      - WebsiteURL
     Description: URL for website hosted on S3
+    Value: !GetAtt S3Bucket.WebsiteURL

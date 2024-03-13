@@ -9,12 +9,16 @@ requirements:
 	pip install --quiet --upgrade --requirement requirements.txt
 
 lint:
+	cfn-lint *.yml
 	black --diff *.py
 	black --diff --ipynb *.ipynb
 
 black:
 	black *.py
 	black --ipynb *.ipynb
+
+rain:
+	rain fmt --write *.yml
 
 lab:
 	jupyter lab

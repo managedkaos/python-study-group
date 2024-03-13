@@ -1,3 +1,4 @@
 jupyter
 jupyterlab-git
+cfn-lint
 black[jupyter]
