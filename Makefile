@@ -20,9 +20,13 @@ lab:
 	jupyter lab
 
 run:
-	$(foreach notebook, $(NOTEBOOKS), jupyter nbconvert --execute --inplace $(notebook);
+	$(foreach notebook, $(NOTEBOOKS), jupyter nbconvert --execute --inplace $(notebook); )
 
 clean:
 	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace *.ipynb
+
+nuke: clean
+	rm -rvf ./data
+	rm -rf __pycache__ .ipynb_checkpoints
 
 all: requirements lint
