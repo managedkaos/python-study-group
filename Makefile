@@ -18,4 +18,10 @@ black:
 lab:
 	jupyter lab
 
+run:
+	jupyter execute --inplace --execute *.ipynb
+
+clean:
+	jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace *.ipynb
+
 all: requirements lint
