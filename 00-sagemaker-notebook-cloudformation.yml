@@ -101,9 +101,13 @@ Outputs:
     Description: The region where the stack is running
     Value: !Sub ${AWS::Region}
 
+  NotebookInstanceArn:
+    Description: The ARN of the SageMaker notebook instance
+    Value: !Ref SageMakerNotebookInstance
+
   NotebookInstanceName:
     Description: The name of the SageMaker notebook instance
-    Value: !Ref SageMakerNotebookInstance
+    Value: !GetAtt SageMakerNotebookInstance.NotebookInstanceName
 
   JupyterLabURL:
     Description: The URL for the Jupyter Lab web interface running on the notebook instance
